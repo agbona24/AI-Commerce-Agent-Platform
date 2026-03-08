@@ -121,3 +121,67 @@ html {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Premium glass effect */
+.glass {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Shimmer effect for buttons */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* Hover lift effect */
+.hover-lift {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(139, 92, 246, 0.15);
+}
+
+/* Text glow */
+.text-glow {
+  text-shadow: 0 0 20px rgba(139, 92, 246, 0.5),
+               0 0 40px rgba(139, 92, 246, 0.3);
+}
+
+/* Gradient border radius fix */
+.gradient-border {
+  background: linear-gradient(var(--card), var(--card)) padding-box,
+              linear-gradient(135deg, var(--primary), var(--accent)) border-box;
+  border: 2px solid transparent;
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(139, 92, 246, 0.3);
+  color: white;
+}
+
+/* Focus visible outline */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

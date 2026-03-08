@@ -13,11 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Nexus AI | Your AI-Powered Business Assistant",
+  title: "Vivax AI | Your AI-Powered Business Assistant",
   description: "Transform your business with AI agents that handle calls, WhatsApp messages, and customer support 24/7. Set up your AI receptionist in 5 minutes.",
   keywords: ["AI receptionist", "WhatsApp automation", "voice AI", "customer support AI", "sales automation"],
   openGraph: {
-    title: "Nexus AI | Your AI-Powered Business Assistant",
+    title: "Vivax AI | Your AI-Powered Business Assistant",
     description: "AI agents that handle calls, messages, and support 24/7",
     type: "website",
   },
