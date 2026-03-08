@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 // Animation variants
 const fadeInUp = {
@@ -82,7 +83,7 @@ function Navbar() {
               <Bot className="w-6 h-6 text-white" />
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background animate-pulse" />
             </div>
-            <span className="text-2xl font-bold tracking-tight">Vivax<span className="text-primary">AI</span></span>
+            <span className="text-2xl font-bold tracking-tight">Vivax <span className="text-primary">AI</span></span>
           </div>
 
           <div className="hidden lg:flex items-center gap-8">
@@ -94,6 +95,7 @@ function Navbar() {
           </div>
 
           <div className="flex items-center gap-3">
+            <ThemeToggle variant="dropdown" />
             <Link href="/login" className="hidden sm:block px-4 py-2 text-muted-foreground hover:text-foreground transition-colors font-medium">
               Sign In
             </Link>
@@ -146,7 +148,7 @@ function Hero() {
 
             {/* Clear Value Proposition */}
             <motion.p variants={fadeInUp} className="text-lg sm:text-xl text-muted-foreground leading-relaxed mb-8 max-w-xl">
-              Stop losing customers to missed calls and slow responses. VivaxAI is an intelligent voice + WhatsApp agent that handles calls, answers questions, showcases your products, and closes sales — even while you sleep.
+              Stop losing customers to missed calls and slow responses. Vivax AI is an intelligent voice + WhatsApp agent that handles calls, answers questions, showcases your products, and closes sales — even while you sleep.
             </motion.p>
 
             {/* Key Benefits */}
@@ -382,22 +384,40 @@ function Integrations() {
       description: "E-commerce Sync",
     },
     {
-      name: "Retell AI",
+      name: "WooCommerce",
       logo: (
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-          <Phone className="w-4 h-4 text-white" />
-        </div>
-      ),
-      description: "Voice AI Engine",
-    },
-    {
-      name: "OpenAI",
-      logo: (
-        <svg viewBox="0 0 24 24" className="w-8 h-8" fill="white">
-          <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.896zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/>
+        <svg viewBox="0 0 24 24" className="w-8 h-8" fill="#96588A">
+          <path d="M2.227 4.857A2.228 2.228 0 000 7.094v6.457c0 1.236 1.001 2.237 2.237 2.237h6.753l2.354 3.063 2.229-3.063 8.2.007A2.227 2.227 0 0024 13.547v-6.45a2.227 2.227 0 00-2.227-2.237H2.227v-.003zM4.109 8.189c.207-.086.428-.074.625.019.093.043.167.104.232.173.064.065.118.138.164.218.039.067.07.135.099.217.041.127.19.718.448 1.776.256 1.054.577 2.39.964 4.01l.121.481c.063-.254.201-.795.414-1.621.213-.828.39-1.527.533-2.1.144-.57.24-.96.291-1.168a.66.66 0 01.117-.236.605.605 0 01.181-.168.66.66 0 01.212-.096.765.765 0 01.229-.032c.07 0 .139.01.206.029a.603.603 0 01.367.284c.053.088.09.181.111.278l.912 5.041c.291-1.078.527-1.964.704-2.658.179-.695.318-1.287.418-1.777a5.21 5.21 0 01.192-.729c.054-.139.117-.264.189-.375a.8.8 0 01.259-.262.624.624 0 01.346-.097.732.732 0 01.296.058l.016.007a.618.618 0 01.327.397.797.797 0 01-.017.453 2.09 2.09 0 01-.101.27c-.043.094-.103.226-.182.394-.079.168-.226.508-.441 1.015a75.97 75.97 0 00-.643 1.593c-.239.615-.458 1.186-.657 1.716-.2.529-.364.945-.492 1.248a1.86 1.86 0 01-.282.48.591.591 0 01-.451.16.594.594 0 01-.301-.092.613.613 0 01-.197-.209.878.878 0 01-.108-.263 2.57 2.57 0 01-.057-.278l-.916-4.749c-.259.959-.477 1.78-.656 2.463-.178.684-.317 1.226-.416 1.627a5.97 5.97 0 01-.211.666.958.958 0 01-.167.3.644.644 0 01-.166.132.643.643 0 01-.192.074.791.791 0 01-.211.025.627.627 0 01-.458-.175.866.866 0 01-.213-.39 15.1 15.1 0 01-.162-.606l-1.382-5.603a.896.896 0 01-.027-.339.618.618 0 01.131-.299.596.596 0 01.27-.19v.005zm14.276-.19c.463 0 .861.095 1.196.284.336.188.587.469.757.84.168.37.254.817.254 1.339a4.14 4.14 0 01-.24 1.422 3.009 3.009 0 01-.686 1.09 2.017 2.017 0 01-1.055.57v.026c.283.052.524.188.722.404.199.217.35.48.451.791.101.311.152.641.152.989 0 .306-.039.598-.116.878a2.19 2.19 0 01-.358.742 1.76 1.76 0 01-.622.52c-.251.13-.546.196-.885.196h-2.287V8h2.717v-.001zm-.363 1.046h-.98v2.26h.884c.297 0 .553-.061.767-.183.215-.12.38-.299.493-.532.114-.235.171-.519.171-.855 0-.321-.046-.587-.138-.797a.967.967 0 00-.403-.475 1.198 1.198 0 00-.638-.161.924.924 0 00-.156.007v-.264zm-.076 3.426h-.904v2.498h1.024c.318 0 .583-.06.796-.182.212-.12.372-.295.479-.522a1.79 1.79 0 00.16-.773c0-.325-.056-.598-.168-.822a1.06 1.06 0 00-.489-.505 1.604 1.604 0 00-.768-.171c-.046 0-.092.002-.13.006v-.529z"/>
         </svg>
       ),
-      description: "GPT-4 Powered",
+      description: "WordPress E-commerce",
+    },
+    {
+      name: "Magento",
+      logo: (
+        <svg viewBox="0 0 24 24" className="w-8 h-8" fill="#EE672F">
+          <path d="M12 24l-4.455-2.572v-12l2.97-1.714v12.001l1.485.857 1.485-.857V7.714l2.97 1.714v12L12 24zM12 0L0 6.857v10.286l2.97 1.715V8.572L12 3.429l9.03 5.143v10.286l2.97-1.715V6.857L12 0z"/>
+        </svg>
+      ),
+      description: "Enterprise Commerce",
+    },
+    {
+      name: "Odoo",
+      logo: (
+        <svg viewBox="0 0 24 24" className="w-8 h-8" fill="#714B67">
+          <path d="M21.805 7.898a4.028 4.028 0 00-2.39-.795 4.074 4.074 0 00-4.07 4.07 4.074 4.074 0 004.07 4.07 4.028 4.028 0 002.39-.795v.618h2.195v-7.786h-2.195v.618zm-2.39 5.296a2.031 2.031 0 01-2.02-2.021c0-1.115.908-2.022 2.02-2.022 1.115 0 2.022.907 2.022 2.022a2.031 2.031 0 01-2.022 2.021zM9.69 7.103a4.074 4.074 0 00-4.07 4.07 4.074 4.074 0 004.07 4.07 4.074 4.074 0 004.07-4.07 4.074 4.074 0 00-4.07-4.07zm0 6.091a2.031 2.031 0 01-2.021-2.021c0-1.115.907-2.022 2.021-2.022 1.115 0 2.022.907 2.022 2.022a2.031 2.031 0 01-2.022 2.021zM2.195 7.28H0v7.786h2.195v-4.87c0-.723.59-1.312 1.313-1.312h1.308V7.28H3.508A1.315 1.315 0 002.195 8.59v-1.31z"/>
+        </svg>
+      ),
+      description: "Business ERP",
+    },
+    {
+      name: "SAP",
+      logo: (
+        <svg viewBox="0 0 24 24" className="w-8 h-8" fill="#0FAAFF">
+          <path d="M0 6.064v11.872h24V6.064H0zm12.958 10.14H11.34l-.004-6.275-1.803 6.275H8.126l-1.824-6.246-.004 6.246H4.686V7.797h2.605l1.63 5.508 1.587-5.508h2.45v8.407zm1.64-6.107h1.932c.588 0 .808.323.808.658v1.096c0 .378-.227.631-.809.631h-.953l-.978-.002V10.1zm3.974 2.673c.451-.268.72-.685.72-1.254v-1.24c0-1.07-.661-1.48-1.812-1.48h-4.096v8.407h1.928v-3.21h.9c.685 0 .799.244.825.857v1.37c0 .406.026.776.061.982h1.937c-.079-.293-.123-.642-.106-1.22l-.009-1.263c.009-.686-.167-1.22-1.348-1.396v-.553z"/>
+        </svg>
+      ),
+      description: "Enterprise Systems",
     },
   ];
 
@@ -405,7 +425,7 @@ function Integrations() {
     <section className="py-20 border-y border-border/50 bg-gradient-to-b from-background to-card/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={staggerContainer} className="text-center mb-12">
-          <motion.p variants={fadeInUp} className="text-sm text-muted-foreground mb-4">POWERED BY INDUSTRY LEADERS</motion.p>
+          <motion.p variants={fadeInUp} className="text-sm text-muted-foreground mb-4">CONNECT WITH YOUR FAVORITE TOOLS</motion.p>
           <motion.h3 variants={fadeInUp} className="text-2xl sm:text-3xl font-bold">Seamless <span className="gradient-text">Integrations</span></motion.h3>
         </motion.div>
 
@@ -442,7 +462,7 @@ function WhatYouGet() {
             <span className="gradient-text">Not Just a Chatbot</span>
           </motion.h2>
           <motion.p variants={fadeInUp} className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            VivaxAI combines voice calls, WhatsApp messaging, and e-commerce in one intelligent platform that actually understands your business.
+            Vivax AI combines voice calls, WhatsApp messaging, and e-commerce in one intelligent platform that actually understands your business.
           </motion.p>
         </motion.div>
 
@@ -997,7 +1017,7 @@ function IndustryUseCases() {
             Built For <span className="gradient-text">Your Industry</span>
           </motion.h2>
           <motion.p variants={fadeInUp} className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            See how businesses like yours use VivaxAI to transform customer interactions
+            See how businesses like yours use Vivax AI to transform customer interactions
           </motion.p>
         </motion.div>
 
@@ -1105,7 +1125,7 @@ function Results() {
             <span className="gradient-text">Real Businesses</span>
           </motion.h2>
           <motion.p variants={fadeInUp} className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            See what happens when you deploy VivaxAI
+            See what happens when you deploy Vivax AI
           </motion.p>
         </motion.div>
 
@@ -1118,7 +1138,7 @@ function Results() {
                 <X className="w-6 h-6 text-red-500" />
               </div>
               <div>
-                <p className="font-semibold">Before VivaxAI</p>
+                <p className="font-semibold">Before Vivax AI</p>
                 <p className="text-sm text-muted-foreground">The struggle was real</p>
               </div>
             </div>
@@ -1130,7 +1150,7 @@ function Results() {
                 "Staff overwhelmed with repetitive queries",
                 "No 24/7 support capability",
               ].map((item) => (
-                <li key={item} className="flex items-center gap-3 text-red-200/80">
+                <li key={item} className="flex items-center gap-3 text-red-700 dark:text-red-300">
                   <X className="w-4 h-4 text-red-500 flex-shrink-0" />
                   <span>{item}</span>
                 </li>
@@ -1145,7 +1165,7 @@ function Results() {
                 <Check className="w-6 h-6 text-green-500" />
               </div>
               <div>
-                <p className="font-semibold">After VivaxAI</p>
+                <p className="font-semibold">After Vivax AI</p>
                 <p className="text-sm text-muted-foreground">The transformation</p>
               </div>
             </div>
@@ -1157,7 +1177,7 @@ function Results() {
                 "Staff focused on high-value tasks",
                 "True 24/7/365 availability",
               ].map((item) => (
-                <li key={item} className="flex items-center gap-3 text-green-200/80">
+                <li key={item} className="flex items-center gap-3 text-green-700 dark:text-green-300">
                   <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                   <span>{item}</span>
                 </li>
@@ -1189,7 +1209,7 @@ function Results() {
 function Testimonials() {
   const testimonials = [
     {
-      quote: "VivaxAI transformed our business. We went from missing 60% of calls to capturing every lead. Our revenue increased 47% in 3 months.",
+      quote: "Vivax AI transformed our business. We went from missing 60% of calls to capturing every lead. Our revenue increased 47% in 3 months.",
       name: "Adaeze Okonkwo",
       role: "CEO, TechRetail Nigeria",
       avatar: "AO",
@@ -1386,7 +1406,7 @@ function FinalCTA() {
             </h2>
 
             <p className="text-lg text-muted-foreground mb-8 max-w-xl mx-auto">
-              Join 2,500+ businesses using VivaxAI to automate customer interactions. Setup takes 5 minutes.
+              Join 2,500+ businesses using Vivax AI to automate customer interactions. Setup takes 5 minutes.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -1411,7 +1431,7 @@ function LiveChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<{type: 'user' | 'ai', text: string}[]>([
-    { type: 'ai', text: "Hi! 👋 I'm VivaxAI. Try asking me anything — like \"What are your prices?\" or \"Book an appointment\"" }
+    { type: 'ai', text: "Hi! 👋 I'm Vivax AI. Try asking me anything — like \"What are your prices?\" or \"Book an appointment\"" }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -1420,11 +1440,11 @@ function LiveChatWidget() {
     'price': "Our plans start at ₦25,000/month for Starter, ₦75,000/month for Professional, and custom pricing for Enterprise. All plans include a 14-day free trial! Would you like me to help you choose the right plan?",
     'appointment': "I'd be happy to schedule an appointment for you! We have availability tomorrow at 10 AM, 2 PM, or 4 PM. Which time works best for you?",
     'demo': "Great! I can show you a live demo right now. What industry are you in? (E.g., Dental, Real Estate, E-commerce, Restaurant)",
-    'work': "VivaxAI works in 3 simple steps: 1) Connect your WhatsApp/Phone, 2) Upload your business info, 3) Go live in 5 minutes! Your AI agent then handles calls, messages, and sales 24/7.",
+    'work': "Vivax AI works in 3 simple steps: 1) Connect your WhatsApp/Phone, 2) Upload your business info, 3) Go live in 5 minutes! Your AI agent then handles calls, messages, and sales 24/7.",
     'whatsapp': "Yes! We integrate directly with WhatsApp Business API. Your AI can respond to messages, share product catalogs, send payment links, and even process orders — all automatically.",
-    'voice': "Our voice AI sounds incredibly natural! Powered by Retell AI, it can answer calls, schedule appointments, take messages, and transfer to humans when needed. Want to hear a sample?",
-    'hello': "Hello! Welcome to VivaxAI. I'm here to help you learn how our AI can automate your customer calls, WhatsApp messages, and sales. What would you like to know?",
-    'hi': "Hey there! 👋 Thanks for trying out VivaxAI. I'm an AI assistant — ask me about pricing, features, or how we can help your business!",
+    'voice': "Our voice AI sounds incredibly natural! It can answer calls, schedule appointments, take messages, and transfer to humans when needed. The voice technology is trained on thousands of conversations to sound human-like. Want to hear a sample?",
+    'hello': "Hello! Welcome to Vivax AI. I'm here to help you learn how our AI can automate your customer calls, WhatsApp messages, and sales. What would you like to know?",
+    'hi': "Hey there! 👋 Thanks for trying out Vivax AI. I'm an AI assistant — ask me about pricing, features, or how we can help your business!",
     'help': "I can help you with: \n• Pricing & plans\n• Product features\n• Scheduling a demo\n• Industry-specific solutions\n\nJust type your question!",
     'default': "That's a great question! Our team would love to give you a detailed answer. Would you like me to schedule a quick call with a product specialist, or I can send you more information via email?"
   };
@@ -1498,7 +1518,7 @@ function LiveChatWidget() {
                   <Bot className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="font-semibold text-white">VivaxAI</p>
+                  <p className="font-semibold text-white">Vivax AI</p>
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
                     <span className="text-xs text-white/80">Online • Try me!</span>
@@ -1525,7 +1545,7 @@ function LiveChatWidget() {
                         {msg.type === 'ai' && (
                           <div className="flex items-center gap-2 mb-1">
                             <Bot className="w-3 h-3 text-primary" />
-                            <span className="text-xs font-medium text-primary">VivaxAI</span>
+                            <span className="text-xs font-medium text-primary">Vivax AI</span>
                           </div>
                         )}
                         <p className="text-sm whitespace-pre-line">{msg.text}</p>
@@ -1581,7 +1601,7 @@ function LiveChatWidget() {
                     </button>
                   </div>
                   <p className="text-xs text-center text-muted-foreground mt-2">
-                    Powered by VivaxAI • <button className="text-primary hover:underline">Start free trial</button>
+                    Powered by Vivax AI • <button className="text-primary hover:underline">Start free trial</button>
                   </p>
                 </div>
               </>
@@ -1604,7 +1624,7 @@ function Footer() {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 via-primary to-cyan-500 flex items-center justify-center">
                 <Bot className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold">VivaxAI</span>
+              <span className="text-2xl font-bold">Vivax AI</span>
             </div>
             <p className="text-muted-foreground mb-4 max-w-xs">
               AI-powered voice and WhatsApp automation for businesses that want to scale without limits.
@@ -1651,7 +1671,7 @@ function Footer() {
 
         <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2026 VivaxAI. All rights reserved.
+            © 2026 Vivax AI. All rights reserved.
           </p>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <span>🇳🇬 Made in Nigeria</span>

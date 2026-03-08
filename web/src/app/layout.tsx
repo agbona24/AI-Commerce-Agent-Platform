@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,11 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Vivax AI | Your AI-Powered Business Assistant",
+  title: "Vivax  AI | Your AI-Powered Business Assistant",
   description: "Transform your business with AI agents that handle calls, WhatsApp messages, and customer support 24/7. Set up your AI receptionist in 5 minutes.",
   keywords: ["AI receptionist", "WhatsApp automation", "voice AI", "customer support AI", "sales automation"],
   openGraph: {
-    title: "Vivax AI | Your AI-Powered Business Assistant",
+    title: "Vivax  AI | Your AI-Powered Business Assistant",
     description: "AI agents that handle calls, messages, and support 24/7",
     type: "website",
   },
@@ -29,11 +30,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
