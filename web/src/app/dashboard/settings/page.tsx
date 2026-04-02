@@ -16,9 +16,10 @@ import {
   ChevronRight,
   Mail,
   Smartphone,
+  Bot,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 
 const settingsSections = [
   {
@@ -84,6 +85,23 @@ const settingsSections = [
         description: "Customize theme and display options",
         icon: Palette,
         href: "/dashboard/settings/appearance",
+      },
+    ],
+  },
+  {
+    title: "AI Configuration",
+    items: [
+      {
+        name: "AI Settings",
+        description: "Configure OpenAI API and AI behavior",
+        icon: Sparkles,
+        href: "/dashboard/settings/ai",
+      },
+      {
+        name: "AI Agents",
+        description: "Manage voice and chat AI agents",
+        icon: Bot,
+        href: "/dashboard/agents",
       },
     ],
   },

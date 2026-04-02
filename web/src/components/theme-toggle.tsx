@@ -15,8 +15,9 @@ export function ThemeToggle({ variant = "icon", className = "" }: ThemeTogglePro
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  // Set mounted on client side to avoid hydration mismatch
   useEffect(() => {
-    setMounted(true);
+    requestAnimationFrame(() => setMounted(true));
   }, []);
 
   if (!mounted) {

@@ -2,35 +2,41 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { loginSchema, LoginFormData } from "@/lib/validations/auth";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    remember: false,
+  const { login, isLoading, error, clearError } = useAuth();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      remember: false,
+    },
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // Redirect to dashboard
-    window.location.href = "/dashboard";
+  const onSubmit = async (data: LoginFormData) => {
+    clearError();
+    try {
+      await login({
+        email: data.email,
+        password: data.password,
+        remember: data.remember,
+      });
+    } catch {
+      // Error is handled in context
+    }
   };
 
   return (
@@ -46,7 +52,19 @@ export default function LoginPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+      {/* Global error */}
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/20 flex items-start gap-3"
+        >
+          <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+          <p className="text-sm text-destructive">{error}</p>
+        </motion.div>
+      )}
+
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mb-6">
         {/* Email */}
         <div>
           <label className="block text-sm font-medium mb-2">Email Address</label>
@@ -54,14 +72,16 @@ export default function LoginPage() {
             <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
+              {...register("email")}
               placeholder="john@example.com"
-              required
-              className="w-full pl-12 pr-4 py-3 rounded-xl bg-card border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+              className={`w-full pl-12 pr-4 py-3 rounded-xl bg-card border ${
+                errors.email ? "border-destructive" : "border-border"
+              } focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all`}
             />
           </div>
+          {errors.email && (
+            <p className="mt-1.5 text-sm text-destructive">{errors.email.message}</p>
+          )}
         </div>
 
         {/* Password */}
@@ -79,12 +99,11 @@ export default function LoginPage() {
             <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
               type={showPassword ? "text" : "password"}
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
+              {...register("password")}
               placeholder="Enter your password"
-              required
-              className="w-full pl-12 pr-12 py-3 rounded-xl bg-card border border-border focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
+              className={`w-full pl-12 pr-12 py-3 rounded-xl bg-card border ${
+                errors.password ? "border-destructive" : "border-border"
+              } focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all`}
             />
             <button
               type="button"
@@ -98,6 +117,9 @@ export default function LoginPage() {
               )}
             </button>
           </div>
+          {errors.password && (
+            <p className="mt-1.5 text-sm text-destructive">{errors.password.message}</p>
+          )}
         </div>
 
         {/* Remember me */}
@@ -105,9 +127,7 @@ export default function LoginPage() {
           <input
             type="checkbox"
             id="remember"
-            name="remember"
-            checked={formData.remember}
-            onChange={handleInputChange}
+            {...register("remember")}
             className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
           />
           <label htmlFor="remember" className="text-sm text-muted-foreground">

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Building2,
   Users,
@@ -29,11 +30,11 @@ import {
   CheckCircle2,
   Circle,
   Loader2,
+  AlertCircle,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
-
-// Simulated account type from registration - in real app, this would come from auth context
-const mockAccountType: "business" | "agency" = "business";
+import { useAuth } from "@/hooks/useAuth";
+import { authService, getErrorMessage } from "@/lib/api/auth";
 
 const industries = [
   { id: "retail", name: "Retail & E-commerce", icon: ShoppingBag, color: "from-orange-500 to-red-500" },
@@ -72,8 +73,14 @@ const channelOptions = [
 
 export default function OnboardingPage() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [accountType] = useState<"business" | "agency">(mockAccountType);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  const { tenant, refreshUser, isLoading: authLoading } = useAuth();
+  const router = useRouter();
+  
+  // Determine account type from tenant settings or default to business
+  const accountType = (tenant?.settings as Record<string, unknown>)?.account_type === "agency" ? "agency" : "business";
   
   // Form data
   const [formData, setFormData] = useState({
@@ -96,11 +103,26 @@ export default function OnboardingPage() {
     
     // Step 4: Channels
     selectedChannels: [] as string[],
+    
+    // Step 5: Voice Setup (if voice channel selected)
+    twilioAccountSid: "",
+    twilioAuthToken: "",
+    twilioPhoneNumber: "",
+    openaiApiKey: "",
   });
 
   const steps = accountType === "agency" 
-    ? ["Agency Setup", "First Client", "Industry", "AI Configuration", "Channels", "Review"]
-    : ["Business Info", "Industry", "AI Configuration", "Channels", "Review"];
+    ? ["Agency Setup", "First Client", "Industry", "AI Configuration", "Channels", "Voice Setup", "Review"]
+    : ["Business Info", "Industry", "AI Configuration", "Channels", "Voice Setup", "Review"];
+  
+  // Determine which steps to show based on channel selection
+  const activeSteps = steps.filter((step) => {
+    // Skip voice setup step if voice channel is not selected
+    if (step === "Voice Setup" && !formData.selectedChannels.includes("voice")) {
+      return false;
+    }
+    return true;
+  });
 
   const updateFormData = (field: string, value: string | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -116,30 +138,38 @@ export default function OnboardingPage() {
   };
 
   const canProceed = () => {
-    if (accountType === "agency") {
-      switch (currentStep) {
-        case 0: return formData.agencyName.length >= 2;
-        case 1: return formData.clientBusinessName.length >= 2;
-        case 2: return formData.industry !== "";
-        case 3: return formData.selectedTasks.length > 0 && formData.tone !== "";
-        case 4: return formData.selectedChannels.length > 0;
-        case 5: return true;
-        default: return false;
-      }
-    } else {
-      switch (currentStep) {
-        case 0: return formData.businessName.length >= 2;
-        case 1: return formData.industry !== "";
-        case 2: return formData.selectedTasks.length > 0 && formData.tone !== "";
-        case 3: return formData.selectedChannels.length > 0;
-        case 4: return true;
-        default: return false;
-      }
+    const currentStepName = activeSteps[currentStep];
+    
+    switch (currentStepName) {
+      case "Agency Setup":
+        return formData.agencyName.length >= 2;
+      case "First Client":
+        return formData.clientBusinessName.length >= 2;
+      case "Business Info":
+        return formData.businessName.length >= 2;
+      case "Industry":
+        return formData.industry !== "";
+      case "AI Configuration":
+        return formData.selectedTasks.length > 0 && formData.tone !== "";
+      case "Channels":
+        return formData.selectedChannels.length > 0;
+      case "Voice Setup":
+        // All voice fields required when voice channel is selected
+        return (
+          formData.twilioAccountSid.length > 0 &&
+          formData.twilioAuthToken.length > 0 &&
+          formData.twilioPhoneNumber.length > 0 &&
+          formData.openaiApiKey.length > 0
+        );
+      case "Review":
+        return true;
+      default:
+        return false;
     }
   };
 
   const handleNext = () => {
-    if (currentStep < steps.length - 1) {
+    if (currentStep < activeSteps.length - 1) {
       setCurrentStep(prev => prev + 1);
     }
   };
@@ -152,10 +182,44 @@ export default function OnboardingPage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    // Redirect to dashboard
-    window.location.href = "/dashboard";
+    setError(null);
+    
+    try {
+      // Prepare onboarding data
+      const onboardingData = {
+        business_name: accountType === "agency" ? formData.clientBusinessName : formData.businessName,
+        website: formData.website,
+        team_size: formData.teamSize,
+        industry: formData.industry === "other" ? formData.customIndustry : formData.industry,
+        custom_industry: formData.customIndustry,
+        ai_tasks: formData.selectedTasks,
+        ai_tone: formData.tone,
+        channels: formData.selectedChannels,
+        // Voice integrations (if voice is selected)
+        ...(formData.selectedChannels.includes("voice") && {
+          twilio_credentials: {
+            account_sid: formData.twilioAccountSid,
+            auth_token: formData.twilioAuthToken,
+            phone_number: formData.twilioPhoneNumber,
+          },
+          openai_credentials: {
+            api_key: formData.openaiApiKey,
+          },
+        }),
+      };
+      
+      // Call API to complete onboarding
+      await authService.completeOnboarding(onboardingData);
+      
+      // Refresh user data to get updated tenant
+      await refreshUser();
+      
+      // Redirect to dashboard
+      router.push("/dashboard");
+    } catch (err) {
+      setError(getErrorMessage(err));
+      setIsSubmitting(false);
+    }
   };
 
   const fadeInUp = {
@@ -178,7 +242,7 @@ export default function OnboardingPage() {
         <div className="flex-1">
           <h2 className="text-white/60 text-sm font-medium mb-6 uppercase tracking-wider">Setup Progress</h2>
           <div className="space-y-4">
-            {steps.map((step, index) => (
+            {activeSteps.map((step, index) => (
               <div key={step} className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
                   index < currentStep
@@ -224,7 +288,7 @@ export default function OnboardingPage() {
             </Link>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">
-                Step {currentStep + 1} of {steps.length}
+                Step {currentStep + 1} of {activeSteps.length}
               </span>
               <ThemeToggle />
             </div>
@@ -234,7 +298,7 @@ export default function OnboardingPage() {
             <motion.div
               className="h-full bg-gradient-to-r from-violet-600 to-indigo-600"
               initial={{ width: 0 }}
-              animate={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+              animate={{ width: `${((currentStep + 1) / activeSteps.length) * 100}%` }}
               transition={{ duration: 0.3 }}
             />
           </div>
@@ -244,124 +308,123 @@ export default function OnboardingPage() {
         <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
           <div className="w-full max-w-2xl">
             <AnimatePresence mode="wait">
-              {/* Business Info Step (Business) or Agency Setup (Agency) */}
-              {currentStep === 0 && (
-                <motion.div key="step0" {...fadeInUp} transition={{ duration: 0.3 }}>
-                  {accountType === "agency" ? (
-                    <>
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                          <Users className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <h1 className="text-2xl lg:text-3xl font-bold">Set up your agency</h1>
-                          <p className="text-muted-foreground">Tell us about your consulting business</p>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-8 space-y-6">
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Agency Name</label>
-                          <input
-                            type="text"
-                            value={formData.agencyName}
-                            onChange={(e) => updateFormData("agencyName", e.target.value)}
-                            placeholder="Your agency or consulting firm name"
-                            className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Website (Optional)</label>
-                          <input
-                            type="url"
-                            value={formData.website}
-                            onChange={(e) => updateFormData("website", e.target.value)}
-                            placeholder="https://youragency.com"
-                            className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
-                          />
-                        </div>
+              {/* Business Info Step */}
+              {activeSteps[currentStep] === "Business Info" && (
+                <motion.div key="step-business" {...fadeInUp} transition={{ duration: 0.3 }}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                      <Building2 className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-2xl lg:text-3xl font-bold">Tell us about your business</h1>
+                      <p className="text-muted-foreground">We&apos;ll customize Vivax AI for you</p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-8 space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Business Name</label>
+                      <input
+                        type="text"
+                        value={formData.businessName}
+                        onChange={(e) => updateFormData("businessName", e.target.value)}
+                        placeholder="Your company or store name"
+                        className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Website (Optional)</label>
+                      <input
+                        type="url"
+                        value={formData.website}
+                        onChange={(e) => updateFormData("website", e.target.value)}
+                        placeholder="https://yourbusiness.com"
+                        className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                      />
+                    </div>
 
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Team Size</label>
-                          <div className="relative">
-                            <select
-                              value={formData.teamSize}
-                              onChange={(e) => updateFormData("teamSize", e.target.value)}
-                              className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all appearance-none"
-                            >
-                              <option value="">Select team size</option>
-                              <option value="solo">Just me</option>
-                              <option value="2-5">2-5 people</option>
-                              <option value="6-20">6-20 people</option>
-                              <option value="20+">20+ people</option>
-                            </select>
-                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
-                          </div>
-                        </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Team Size</label>
+                      <div className="relative">
+                        <select
+                          value={formData.teamSize}
+                          onChange={(e) => updateFormData("teamSize", e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all appearance-none"
+                        >
+                          <option value="">Select team size</option>
+                          <option value="1">Just me</option>
+                          <option value="2-10">2-10 employees</option>
+                          <option value="11-50">11-50 employees</option>
+                          <option value="51-200">51-200 employees</option>
+                          <option value="200+">200+ employees</option>
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
                       </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-3 mb-2">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-                          <Building2 className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <h1 className="text-2xl lg:text-3xl font-bold">Tell us about your business</h1>
-                          <p className="text-muted-foreground">We&apos;ll customize Vivax AI for you</p>
-                        </div>
-                      </div>
-                      
-                      <div className="mt-8 space-y-6">
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Business Name</label>
-                          <input
-                            type="text"
-                            value={formData.businessName}
-                            onChange={(e) => updateFormData("businessName", e.target.value)}
-                            placeholder="Your company or store name"
-                            className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Website (Optional)</label>
-                          <input
-                            type="url"
-                            value={formData.website}
-                            onChange={(e) => updateFormData("website", e.target.value)}
-                            placeholder="https://yourbusiness.com"
-                            className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
-                          />
-                        </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
 
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Team Size</label>
-                          <div className="relative">
-                            <select
-                              value={formData.teamSize}
-                              onChange={(e) => updateFormData("teamSize", e.target.value)}
-                              className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all appearance-none"
-                            >
-                              <option value="">Select team size</option>
-                              <option value="1">Just me</option>
-                              <option value="2-10">2-10 employees</option>
-                              <option value="11-50">11-50 employees</option>
-                              <option value="51-200">51-200 employees</option>
-                              <option value="200+">200+ employees</option>
-                            </select>
-                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
-                          </div>
-                        </div>
+              {/* Agency Setup Step */}
+              {activeSteps[currentStep] === "Agency Setup" && (
+                <motion.div key="step-agency" {...fadeInUp} transition={{ duration: 0.3 }}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-2xl lg:text-3xl font-bold">Set up your agency</h1>
+                      <p className="text-muted-foreground">Tell us about your consulting business</p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-8 space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Agency Name</label>
+                      <input
+                        type="text"
+                        value={formData.agencyName}
+                        onChange={(e) => updateFormData("agencyName", e.target.value)}
+                        placeholder="Your agency or consulting firm name"
+                        className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Website (Optional)</label>
+                      <input
+                        type="url"
+                        value={formData.website}
+                        onChange={(e) => updateFormData("website", e.target.value)}
+                        placeholder="https://youragency.com"
+                        className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Team Size</label>
+                      <div className="relative">
+                        <select
+                          value={formData.teamSize}
+                          onChange={(e) => updateFormData("teamSize", e.target.value)}
+                          className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all appearance-none"
+                        >
+                          <option value="">Select team size</option>
+                          <option value="solo">Just me</option>
+                          <option value="2-5">2-5 people</option>
+                          <option value="6-20">6-20 people</option>
+                          <option value="20+">20+ people</option>
+                        </select>
+                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
                       </div>
-                    </>
-                  )}
+                    </div>
+                  </div>
                 </motion.div>
               )}
 
               {/* First Client Step (Agency only) */}
-              {currentStep === 1 && accountType === "agency" && (
+              {activeSteps[currentStep] === "First Client" && (
                 <motion.div key="step1-agency" {...fadeInUp} transition={{ duration: 0.3 }}>
                   <div className="flex items-center gap-3 mb-2">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
@@ -403,7 +466,7 @@ export default function OnboardingPage() {
               )}
 
               {/* Industry Step */}
-              {((currentStep === 1 && accountType === "business") || (currentStep === 2 && accountType === "agency")) && (
+              {activeSteps[currentStep] === "Industry" && (
                 <motion.div key="step-industry" {...fadeInUp} transition={{ duration: 0.3 }}>
                   <div className="flex items-center gap-3 mb-2">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
@@ -453,7 +516,7 @@ export default function OnboardingPage() {
               )}
 
               {/* AI Configuration Step */}
-              {((currentStep === 2 && accountType === "business") || (currentStep === 3 && accountType === "agency")) && (
+              {activeSteps[currentStep] === "AI Configuration" && (
                 <motion.div key="step-ai" {...fadeInUp} transition={{ duration: 0.3 }}>
                   <div className="flex items-center gap-3 mb-2">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
@@ -524,7 +587,7 @@ export default function OnboardingPage() {
               )}
 
               {/* Channels Step */}
-              {((currentStep === 3 && accountType === "business") || (currentStep === 4 && accountType === "agency")) && (
+              {activeSteps[currentStep] === "Channels" && (
                 <motion.div key="step-channels" {...fadeInUp} transition={{ duration: 0.3 }}>
                   <div className="flex items-center gap-3 mb-2">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
@@ -573,8 +636,125 @@ export default function OnboardingPage() {
                 </motion.div>
               )}
 
+              {/* Voice Setup Step */}
+              {activeSteps[currentStep] === "Voice Setup" && (
+                <motion.div key="step-voice" {...fadeInUp} transition={{ duration: 0.3 }}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center">
+                      <Phone className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-2xl lg:text-3xl font-bold">Set up Voice AI</h1>
+                      <p className="text-muted-foreground">Connect Twilio and OpenAI to power your voice agent</p>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-8 space-y-6">
+                    {/* Twilio Section */}
+                    <div className="p-5 rounded-xl border border-border bg-muted/30">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-lg bg-red-500 flex items-center justify-center text-xl">
+                          📞
+                        </div>
+                        <div>
+                          <h3 className="font-medium">Twilio Voice</h3>
+                          <p className="text-sm text-muted-foreground">For phone calls</p>
+                        </div>
+                        <a 
+                          href="https://console.twilio.com" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="ml-auto text-sm text-violet-500 hover:underline"
+                        >
+                          Get credentials →
+                        </a>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Account SID</label>
+                          <input
+                            type="text"
+                            value={formData.twilioAccountSid}
+                            onChange={(e) => updateFormData("twilioAccountSid", e.target.value)}
+                            placeholder="AC..."
+                            className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all font-mono text-sm"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Auth Token</label>
+                          <input
+                            type="password"
+                            value={formData.twilioAuthToken}
+                            onChange={(e) => updateFormData("twilioAuthToken", e.target.value)}
+                            placeholder="Your Twilio auth token"
+                            className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Phone Number</label>
+                          <input
+                            type="text"
+                            value={formData.twilioPhoneNumber}
+                            onChange={(e) => updateFormData("twilioPhoneNumber", e.target.value)}
+                            placeholder="+1234567890"
+                            className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* OpenAI Section */}
+                    <div className="p-5 rounded-xl border border-border bg-muted/30">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center text-xl">
+                          🤖
+                        </div>
+                        <div>
+                          <h3 className="font-medium">OpenAI</h3>
+                          <p className="text-sm text-muted-foreground">For AI responses</p>
+                        </div>
+                        <a 
+                          href="https://platform.openai.com/api-keys" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="ml-auto text-sm text-violet-500 hover:underline"
+                        >
+                          Get API key →
+                        </a>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium mb-2">API Key</label>
+                        <input
+                          type="password"
+                          value={formData.openaiApiKey}
+                          onChange={(e) => updateFormData("openaiApiKey", e.target.value)}
+                          placeholder="sk-..."
+                          className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition-all font-mono text-sm"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="p-4 bg-violet-500/10 rounded-xl border border-violet-500/20">
+                      <div className="flex items-start gap-3">
+                        <Sparkles className="w-5 h-5 text-violet-500 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium text-sm">Your credentials are encrypted</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            All API keys are encrypted at rest and never shared. You can update or remove them anytime from Settings.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Review Step */}
-              {((currentStep === 4 && accountType === "business") || (currentStep === 5 && accountType === "agency")) && (
+              {activeSteps[currentStep] === "Review" && (
                 <motion.div key="step-review" {...fadeInUp} transition={{ duration: 0.3 }}>
                   <div className="flex items-center gap-3 mb-2">
                     <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
@@ -667,6 +847,27 @@ export default function OnboardingPage() {
                         })}
                       </div>
                     </div>
+                    
+                    {/* Voice Integration Summary */}
+                    {formData.selectedChannels.includes("voice") && (
+                      <div className="p-5 rounded-xl border border-green-500 bg-green-500/10">
+                        <div className="flex items-center gap-3 mb-3">
+                          <Phone className="w-5 h-5 text-green-500" />
+                          <h3 className="font-medium">Voice Integration</h3>
+                          <CheckCircle2 className="w-4 h-4 text-green-500 ml-auto" />
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Twilio Phone</span>
+                            <span className="font-medium">{formData.twilioPhoneNumber}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">OpenAI</span>
+                            <span className="font-medium text-green-500">Connected</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* What happens next */}
                     <div className="p-5 rounded-xl border border-violet-500/30 bg-violet-500/5">
@@ -702,48 +903,62 @@ export default function OnboardingPage() {
 
         {/* Footer Navigation */}
         <div className="p-6 border-t border-border bg-background">
-          <div className="max-w-2xl mx-auto flex items-center justify-between">
-            <button
-              onClick={handleBack}
-              disabled={currentStep === 0}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
-                currentStep === 0
-                  ? "opacity-0 pointer-events-none"
-                  : "hover:bg-muted"
-              }`}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </button>
-
-            {currentStep === steps.length - 1 ? (
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="flex items-center gap-2 px-8 py-3 rounded-xl font-medium bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:opacity-90 transition-all disabled:opacity-50"
+          <div className="max-w-2xl mx-auto">
+            {/* Error display */}
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 p-4 rounded-xl bg-destructive/10 border border-destructive/20 flex items-start gap-3"
               >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Creating your agent...
-                  </>
-                ) : (
-                  <>
-                    Launch Vivax AI
-                    <Sparkles className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            ) : (
-              <button
-                onClick={handleNext}
-                disabled={!canProceed()}
-                className="flex items-center gap-2 px-8 py-3 rounded-xl font-medium bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Continue
-                <ArrowRight className="w-4 h-4" />
-              </button>
+                <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                <p className="text-sm text-destructive">{error}</p>
+              </motion.div>
             )}
+            
+            <div className="flex items-center justify-between">
+              <button
+                onClick={handleBack}
+                disabled={currentStep === 0}
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all ${
+                  currentStep === 0
+                    ? "opacity-0 pointer-events-none"
+                    : "hover:bg-muted"
+                }`}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </button>
+
+              {currentStep === activeSteps.length - 1 ? (
+                <button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="flex items-center gap-2 px-8 py-3 rounded-xl font-medium bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:opacity-90 transition-all disabled:opacity-50"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Creating your agent...
+                    </>
+                  ) : (
+                    <>
+                      Launch Vivax AI
+                      <Sparkles className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              ) : (
+                <button
+                  onClick={handleNext}
+                  disabled={!canProceed()}
+                  className="flex items-center gap-2 px-8 py-3 rounded-xl font-medium bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Continue
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

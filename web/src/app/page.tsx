@@ -902,88 +902,89 @@ function CommerceDemo() {
 }
 
 // Industry Use Cases Section
-function IndustryUseCases() {
-  const industries = [
-    {
-      icon: Stethoscope,
-      name: "Dental Clinics",
-      color: "from-blue-500 to-cyan-500",
-      tagline: "Never miss an appointment booking",
-      conversation: [
-        { type: "user", text: "Hi, I need to book an appointment for teeth cleaning" },
-        { type: "ai", text: "Hello! I'd be happy to help you book a teeth cleaning appointment at Smile Dental. We have availability tomorrow at 10 AM, 2 PM, or Thursday at 9 AM. Which works best for you?" },
-        { type: "user", text: "Tomorrow 2 PM works" },
-        { type: "ai", text: "Perfect! I've booked your teeth cleaning for tomorrow at 2 PM with Dr. Adaeze. You'll receive an SMS confirmation shortly. Please arrive 10 minutes early. Is there anything else I can help with?" },
-      ],
-      stats: ["85% booking rate", "Zero missed calls", "24/7 scheduling"],
-    },
-    {
-      icon: HomeIcon,
-      name: "Real Estate",
-      color: "from-emerald-500 to-green-500",
-      tagline: "Qualify leads while you sleep",
-      conversation: [
-        { type: "user", text: "I saw your listing for the 3-bedroom in Lekki" },
-        { type: "ai", text: "Great choice! That's our premium 3-bedroom apartment in Lekki Phase 1. It's ₦85M with 4 bathrooms, a home office, and 24/7 security. Are you looking to buy for personal use or investment?" },
-        { type: "user", text: "Investment. What's the rental yield?" },
-        { type: "ai", text: "Excellent! Properties in that area yield 6-8% annually. Current market rent is ₦6.5M/year. I can schedule a viewing with our agent David. He's available tomorrow or Saturday. Which works?" },
-      ],
-      stats: ["3x more leads", "40% qualified", "Instant response"],
-    },
-    {
-      icon: Stethoscope,
-      name: "Healthcare",
-      color: "from-rose-500 to-pink-500",
-      tagline: "Compassionate care, automated",
-      conversation: [
-        { type: "user", text: "I need to refill my prescription" },
-        { type: "ai", text: "I can help with that. Can you please provide your patient ID or the name the prescription is under?" },
-        { type: "user", text: "Chinedu Okafor, ID 45892" },
-        { type: "ai", text: "Thank you, Mr. Okafor. I see your Metformin prescription is due for refill. I've sent the request to our pharmacy. It will be ready for pickup in 2 hours. Would you like us to prepare delivery instead?" },
-      ],
-      stats: ["50% less hold time", "HIPAA compliant", "Prescription refills"],
-    },
-    {
-      icon: ShoppingBag,
-      name: "E-Commerce",
-      color: "from-orange-500 to-amber-500",
-      tagline: "Turn browsers into buyers",
-      conversation: [
-        { type: "user", text: "Do you have Nike Air Max in size 43?" },
-        { type: "ai", text: "Yes! We have the Nike Air Max 90 in size 43 available in white, black, and the new infrared colorway. Prices start at ₦125,000. Want me to show you pictures?" },
-        { type: "user", text: "Show me the infrared" },
-        { type: "ai", text: "[Image] Here's the Nike Air Max 90 Infrared in size 43. It's ₦145,000 with free delivery in Lagos. I can send you a payment link right now — would you like to proceed?" },
-      ],
-      stats: ["32% conversion", "AOV +₦15K", "Auto upsells"],
-    },
-    {
-      icon: UtensilsCrossed,
-      name: "Restaurants",
-      color: "from-red-500 to-rose-500",
-      tagline: "Fill every table, automatically",
-      conversation: [
-        { type: "user", text: "Do you have a table for 4 tonight?" },
-        { type: "ai", text: "Hello! Welcome to Lagos Grill. For tonight, we have availability at 6:30 PM or 8:45 PM for a party of 4. We also have a special Chef's Table experience available. Which time works for you?" },
-        { type: "user", text: "8:45 PM please" },
-        { type: "ai", text: "Booked! Table for 4 at 8:45 PM tonight. Would you like to pre-order any dishes? Our Suya Platter and Jollof Rice are customer favorites. You'll receive a confirmation SMS shortly." },
-      ],
-      stats: ["90% table fill rate", "Pre-orders +25%", "No-show alerts"],
-    },
-    {
-      icon: GraduationCap,
-      name: "Education",
-      color: "from-violet-500 to-purple-500",
-      tagline: "Enroll more students",
-      conversation: [
-        { type: "user", text: "What courses do you offer for data science?" },
-        { type: "ai", text: "We offer 3 data science programs: Beginner (3 months, ₦250K), Professional (6 months, ₦450K), and Executive (12 months, ₦850K). All include job placement support. Which level interests you?" },
-        { type: "user", text: "Professional. When's the next cohort?" },
-        { type: "ai", text: "Our Professional Data Science cohort starts March 15th. Only 8 spots left! Would you like to schedule a free consultation call with our admissions team, or I can send you the enrollment form now?" },
-      ],
-      stats: ["2x enrollments", "Lead nurturing", "Auto follow-ups"],
-    },
-  ];
+const INDUSTRIES_DATA = [
+  {
+    icon: Stethoscope,
+    name: "Dental Clinics",
+    color: "from-blue-500 to-cyan-500",
+    tagline: "Never miss an appointment booking",
+    conversation: [
+      { type: "user", text: "Hi, I need to book an appointment for teeth cleaning" },
+      { type: "ai", text: "Hello! I'd be happy to help you book a teeth cleaning appointment at Smile Dental. We have availability tomorrow at 10 AM, 2 PM, or Thursday at 9 AM. Which works best for you?" },
+      { type: "user", text: "Tomorrow 2 PM works" },
+      { type: "ai", text: "Perfect! I've booked your teeth cleaning for tomorrow at 2 PM with Dr. Adaeze. You'll receive an SMS confirmation shortly. Please arrive 10 minutes early. Is there anything else I can help with?" },
+    ],
+    stats: ["85% booking rate", "Zero missed calls", "24/7 scheduling"],
+  },
+  {
+    icon: HomeIcon,
+    name: "Real Estate",
+    color: "from-emerald-500 to-green-500",
+    tagline: "Qualify leads while you sleep",
+    conversation: [
+      { type: "user", text: "I saw your listing for the 3-bedroom in Lekki" },
+      { type: "ai", text: "Great choice! That's our premium 3-bedroom apartment in Lekki Phase 1. It's ₦85M with 4 bathrooms, a home office, and 24/7 security. Are you looking to buy for personal use or investment?" },
+      { type: "user", text: "Investment. What's the rental yield?" },
+      { type: "ai", text: "Excellent! Properties in that area yield 6-8% annually. Current market rent is ₦6.5M/year. I can schedule a viewing with our agent David. He's available tomorrow or Saturday. Which works?" },
+    ],
+    stats: ["3x more leads", "40% qualified", "Instant response"],
+  },
+  {
+    icon: Stethoscope,
+    name: "Healthcare",
+    color: "from-rose-500 to-pink-500",
+    tagline: "Compassionate care, automated",
+    conversation: [
+      { type: "user", text: "I need to refill my prescription" },
+      { type: "ai", text: "I can help with that. Can you please provide your patient ID or the name the prescription is under?" },
+      { type: "user", text: "Chinedu Okafor, ID 45892" },
+      { type: "ai", text: "Thank you, Mr. Okafor. I see your Metformin prescription is due for refill. I've sent the request to our pharmacy. It will be ready for pickup in 2 hours. Would you like us to prepare delivery instead?" },
+    ],
+    stats: ["50% less hold time", "HIPAA compliant", "Prescription refills"],
+  },
+  {
+    icon: ShoppingBag,
+    name: "E-Commerce",
+    color: "from-orange-500 to-amber-500",
+    tagline: "Turn browsers into buyers",
+    conversation: [
+      { type: "user", text: "Do you have Nike Air Max in size 43?" },
+      { type: "ai", text: "Yes! We have the Nike Air Max 90 in size 43 available in white, black, and the new infrared colorway. Prices start at ₦125,000. Want me to show you pictures?" },
+      { type: "user", text: "Show me the infrared" },
+      { type: "ai", text: "[Image] Here's the Nike Air Max 90 Infrared in size 43. It's ₦145,000 with free delivery in Lagos. I can send you a payment link right now — would you like to proceed?" },
+    ],
+    stats: ["32% conversion", "AOV +₦15K", "Auto upsells"],
+  },
+  {
+    icon: UtensilsCrossed,
+    name: "Restaurants",
+    color: "from-red-500 to-rose-500",
+    tagline: "Fill every table, automatically",
+    conversation: [
+      { type: "user", text: "Do you have a table for 4 tonight?" },
+      { type: "ai", text: "Hello! Welcome to Lagos Grill. For tonight, we have availability at 6:30 PM or 8:45 PM for a party of 4. We also have a special Chef's Table experience available. Which time works for you?" },
+      { type: "user", text: "8:45 PM please" },
+      { type: "ai", text: "Booked! Table for 4 at 8:45 PM tonight. Would you like to pre-order any dishes? Our Suya Platter and Jollof Rice are customer favorites. You'll receive a confirmation SMS shortly." },
+    ],
+    stats: ["90% table fill rate", "Pre-orders +25%", "No-show alerts"],
+  },
+  {
+    icon: GraduationCap,
+    name: "Education",
+    color: "from-violet-500 to-purple-500",
+    tagline: "Enroll more students",
+    conversation: [
+      { type: "user", text: "What courses do you offer for data science?" },
+      { type: "ai", text: "We offer 3 data science programs: Beginner (3 months, ₦250K), Professional (6 months, ₦450K), and Executive (12 months, ₦850K). All include job placement support. Which level interests you?" },
+      { type: "user", text: "Professional. When's the next cohort?" },
+      { type: "ai", text: "Our Professional Data Science cohort starts March 15th. Only 8 spots left! Would you like to schedule a free consultation call with our admissions team, or I can send you the enrollment form now?" },
+    ],
+    stats: ["2x enrollments", "Lead nurturing", "Auto follow-ups"],
+  },
+];
 
+function IndustryUseCases() {
+  const industries = INDUSTRIES_DATA;
   const [activeIndustry, setActiveIndustry] = useState(0);
   const [msgIndex, setMsgIndex] = useState(0);
 
@@ -998,7 +999,8 @@ function IndustryUseCases() {
       cancelAnimationFrame(resetFrame);
       clearInterval(interval);
     };
-  }, [activeIndustry, industries]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeIndustry]);
 
   const currentIndustry = industries[activeIndustry];
 
